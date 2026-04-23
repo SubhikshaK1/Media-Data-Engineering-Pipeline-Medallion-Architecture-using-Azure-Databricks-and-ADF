@@ -3,9 +3,6 @@ Designed and developed a scalable Medallion Architecture (Lakehouse) for end-to-
 
 <div align="center">
 
-# 🎬 End-to-End Azure Data Lakehouse for Netflix Analytics
-**A Production-Ready Medallion Architecture using Azure Data Factory, Databricks Auto Loader, and Delta Live Tables (DLT)**
-
 ![Azure](https://img.shields.io/badge/Azure-0089D6?style=for-the-badge&logo=microsoft-azure&logoColor=white)
 ![Apache Spark](https://img.shields.io/badge/Apache_Spark-E25A1C?style=for-the-badge&logo=apache-spark&logoColor=white)
 ![Databricks](https://img.shields.io/badge/Databricks-FF3621?style=for-the-badge&logo=databricks&logoColor=white)
@@ -13,26 +10,6 @@ Designed and developed a scalable Medallion Architecture (Lakehouse) for end-to-
 ![Power BI](https://img.shields.io/badge/Power_BI-F2C811?style=for-the-badge&logo=powerbi&logoColor=black)
 
 </div>
-
----
-
-## 📑 Table of Contents
-1. [Project Overview](#1-project-overview)
-2. [Project Materials](#2-project-materials)
-3. [Project Plan (Notion-Based)](#3-project-plan-notion-based)
-4. [Analyzing Requirements](#4-analyzing-requirements)
-5. [Design the Data Architecture](#5-design-the-data-architecture)
-6. [Choose the Right Approach](#6-choose-the-right-approach)
-7. [Design the Layers of the Data Lakehouse](#7-design-the-layers-of-the-data-lakehouse)
-8. [Architecture Diagram](#8-architecture-diagram)
-9. [Project Initialization](#9-project-initialization)
-10. [Data Pipeline Workflow & ETL Process](#10-data-pipeline-workflow--etl-process)
-11. [Code Implementation (Key Snippets)](#11-code-implementation-key-snippets)
-12. [Challenges & Solutions](#12-challenges--solutions)
-13. [How to Run the Project](#13-how-to-run-the-project)
-14. [Future Improvements](#14-future-improvements)
-
----
 
 ## 1. Project Overview
 ### Problem Statement
@@ -274,19 +251,5 @@ def create_gold_titles():
 8. Run the ADF pipeline to load the initial lookup tables.
 9. Start the Databricks Workflow to trigger the Auto Loader, Silver transformations, and DLT pipeline sequentially.
 10. Connect Power BI to your Databricks SQL Warehouse to visualize the Gold tables.
-
----
-
-## 14. Future Improvements
-* **CI/CD Integration:** Implement Azure DevOps or GitHub Actions to automate the deployment of ADF pipelines and Databricks notebooks across Dev/QA/Prod environments.
-* **Data Masking:** Enforce Dynamic Data Masking using Unity Catalog on potentially sensitive PII data before exposing it to the Gold layer.
-* **Notification Framework:** Integrate Azure Logic Apps or ADF metrics to send Microsoft Teams or Email alerts upon pipeline failure.
-
----
-<div align="center">
-<i>Built with "Elegant Simplicity" prioritized over complex engineering overhead. Prioritizing maintainability and declarative data pipelines.</i>
-</div>
-
-
 ---
 *If you find this project helpful, drop a ⭐ on the repository!*
