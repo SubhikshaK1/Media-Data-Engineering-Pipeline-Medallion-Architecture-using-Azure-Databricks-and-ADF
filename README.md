@@ -252,4 +252,55 @@ def create_gold_titles():
 9. Start the Databricks Workflow to trigger the Auto Loader, Silver transformations, and DLT pipeline sequentially.
 10. Connect Power BI to your Databricks SQL Warehouse to visualize the Gold tables.
 ---
+## 14. Detailed Setup
+1. Cloud Provider: Microsoft Azure (Account & Resource Group)
+*	Go to Google and search "azure free account", click the first link, and click Try Azure for free.
+*	Log in or click Create one to make a new Microsoft email account, fill out your personal details, and click Sign up.
+*	Navigate to portal.azure.com and sign in.
+*	In the Azure portal search bar, type "Resource Group", select it, and click + Create.
+*	Name your Resource Group (e.g., RG-Netflix-project), select a region (e.g., Canada Central), click Review + create, and click Create again.
+2. Storage: Azure Data Lake Storage Gen2 (ADLS Gen2)
+*	In your Resource Group, click + Create, search the marketplace for "storage account", pick the Microsoft-provided option, and click Create.
+*	Enter a globally unique storage account name (e.g., netflixprojectdatalakeunch), pick LRS for redundancy to save costs, and click Next.
+*	Crucial Step: Check the box to Enable hierarchical namespace to ensure it acts as a Data Lake rather than blob storage, then click Review + create and Create.
+*	Once deployed, click Go to Resource, click on Containers (under Data storage), and click + Container to create four separate containers: raw, bronze, silver, and gold.
+3. Orchestration: Azure Data Factory (ADF) & GitHub API
+*	Go back to your Resource Group, click + Create, search "Data Factory", select it, and click Create.
+*	Name the factory (e.g., ADF_Netflix), click Review + create, click Create, and once deployed, click Launch Studio.
+*	In the ADF Studio, go to the Manage tab (bottom left), click Linked Services, and click + New.
+*	GitHub Connection: Search "HTTP", click Continue, name it GitHub_con, paste the base URL from the GitHub raw data link, set Authentication to Anonymous, click Test connection, and click Create.
+*	ADLS Connection: Click + New again, search "Data Lake Storage Gen2", click Continue, name it DataLake_connection, pick your storage account from the dropdown, click Test connection, and click Create.
+*	Go to the Author tab (pencil icon), hover over Pipelines, click the three dots, and select New Pipeline.
+*	Dynamic Source Dataset: Drag a Copy Data activity to the canvas. In the Source tab, click + New, pick HTTP -> CSV, and name it DS_GitHub. Do not put the relative URL yet. Go to Advanced -> Open dataset -> Parameters, and create a parameter named file_name. Go to the Connection tab, click the relative URL box, click Add Dynamic Content, and enter @dataset().file_name.
+*	Dynamic Sink Dataset: In the Sink tab, click + New, pick Azure Data Lake Gen2 -> CSV, name it DS_sink, and select your DataLake_connection. Open the dataset -> Parameters, create folder_name and file_name. In the Connection tab, pass these parameters into the folder and file path boxes.
+*	ForEach Loop: Drag a ForEach activity onto the canvas. Create a pipeline variable named p_array (type: Array) and input a JSON array defining the folder and file names (e.g., [{"folder_name":"Netflix_Cast", "file_name":"cast.csv"}]). Pass this array to the ForEach activity's settings via Add Dynamic Content.
+*	Cut the Copy activity and paste it inside the ForEach loop. Assign @item().file_name to the source dataset parameters, and @item().folder_name / @item().file_name to the sink dataset parameters.
+*	Validation Step: Drag a Validation activity before the ForEach loop. Configure its dataset to point to your raw container and specify the master data file name to ensure the pipeline waits for the data to exist before running.
+*	Click Publish All to save your work, then click Debug to run the pipeline.
+
+4. Computation & Transformation: Azure Databricks & Unity Catalog
+*	Workspace Creation: In the Azure Portal, click + Create, search "Azure Databricks", name your workspace, select the Trial pricing tier (for 14-day Premium/Unity Catalog access), and click Create.
+*	Access Connector: Go to the portal search bar, search "Access Connector for Azure Databricks", name it (e.g., access_netflix), and click Create.
+*	Navigate to your ADLS Gen2 storage account -> Access Control (IAM) -> Add role assignment -> select Storage Blob Data Contributor -> assign access to Managed Identity -> select your new Access Connector, and click Review + assign. Copy the Resource ID of the Access Connector.
+*	Account Console & Metastore: Open Databricks, click the top-right dropdown, and select Manage Account. Click Catalog, click Create Metastore, name it, select your region, enter a dedicated ADLS container path (e.g., abfss://metastore@...), paste your Access Connector Resource ID, and click Create. Assign your workspace to this metastore.
+*	Catalog & External Locations: Inside the Databricks Workspace, go to Catalog -> + Create Catalog -> name it netflix_catalog. Click External Data -> Create Credential, name it, and paste your Access Connector ID. Click Create External Location, provide the abfss:// path for your bronze container, select your credential, and click Create. Repeat this click path for the silver, gold, and raw containers.
+*	Compute: Go to the Compute tab -> Create Compute -> select Personal Compute (ensure Unity Catalog is enabled) -> check "Terminate after 20 minutes" -> click Create Compute.
+
+5. Data Quality & Governance: Delta Live Tables (DLT)
+*	In Databricks, click Workspace, right-click a folder, and select Create Notebook.
+*	Type Python code to define data quality expectations using decorators (e.g., defining a dictionary of rules like rules = {"rule1": "show_id IS NOT NULL"} and applying @dlt.expect_all_or_drop(rules)).
+*	Define streaming tables using @dlt.table to read from the silver layer and return the data frame.
+*	Pipeline Creation: Click on the Delta Live Tables tab on the left menu, then click Create Pipeline.
+*	Name the pipeline (e.g., DLT_gold), select Triggered mode, browse and select your DLT notebook path, check the Unity Catalog box, and select your netflix_catalog.
+*	Crucial Cluster Clicks: In the Cluster settings, set Enhanced Auto Scaling to No, set the worker size to 1 (or 0 workers / small node types) to avoid exceeding free-tier vCPU quotas, and ensure your standard all-purpose compute is terminated to free up cores. Click Create, then click Start to run the data quality checks and populate the Gold layer.
+
+6. Visualization: Power BI (via Databricks Partner Connect)
+*	In the Databricks workspace menu, click on the Marketplace tab, and locate Partner Connect.
+*	Click the Power BI tile and click Connect.
+*	Select your compute (either an all-purpose cluster or a Serverless SQL Warehouse if enabled).
+*	Click Download connection file. This initiates a download of a .pbids file to your local computer.
+*	Open the downloaded file in Power BI Desktop; the URL, host, and data connection endpoints will automatically populate, allowing you to instantly begin visualizing the Gold layer.
+
+
+---
 *If you find this project helpful, drop a ⭐ on the repository!*
