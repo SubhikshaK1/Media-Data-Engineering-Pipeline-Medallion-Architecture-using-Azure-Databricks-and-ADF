@@ -139,7 +139,7 @@ graph TD
 ## 9. Project Initialization
 ### Environment Setup
 1. **Resource Group:** Created `rg-netflix-project`.
-2. **Storage:** Deployed ADLS Gen2 (`adlsnetflixprod`) with **Hierarchical Namespace** enabled. Created containers: `raw`, `bronze`, `silver`, `gold`.
+2. **Storage:** Deployed ADLS Gen2 (`netflixprojectdlsubhik`) with **Hierarchical Namespace** enabled. Created containers: `raw`, `bronze`, `silver`, `gold`.
 3. **Data Factory:** Provisioned `adf-netflix-prod`.
 4. **Databricks & Unity Catalog:**
    * Deployed Azure Databricks Premium workspace.
